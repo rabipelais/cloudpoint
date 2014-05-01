@@ -33,9 +33,9 @@ knearest k p  = take k . qsort
         right = filter (\x -> dp <= distance x p) ps
 
 centroid :: Vector Point -> Point
-centroid ps = (P (x/k) (y/k) (z/k))
+centroid ps = k .* p
   where 
-    (P x y z) =  foldr1 (+) ps
+    p = foldr1 (+) ps
     k = fromIntegral $ length ps
 
 covarianceMatrix :: Point -> Vector Point -> Vector Double
@@ -46,8 +46,11 @@ covarianceMatrix center ps = mat
     mat = map (/ fromIntegral n) $ foldr1 (zipWith (+)) $ map outerProd ps'
 
 outerProd :: Point -> Vector Double
-outerProd (P x y z) = vec
-  where 
+outerProd p = vec
+  where
+    x = _x p
+    y = _y p
+    z = _z p 
     xx = x*x
     xy = x*y
     xz = x*z
@@ -55,8 +58,8 @@ outerProd (P x y z) = vec
     yy = y*y
     zz = z*z
     vec = fromList [ xx, xy, xz
-                      , xy, yy, yz
-                      , xz, yz, zz]
+                   , xy, yy, yz
+                   , xz, yz, zz]
 
 firstEigenVector :: Vector Double -> Vector Double
 firstEigenVector m =  convert firstvec
