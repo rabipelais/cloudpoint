@@ -2,41 +2,37 @@
 
 module Normals where
 
-import           Prelude hiding (foldr1, head, tail, filter, (++), take, null, length, map, zipWith, zip)
+import           Prelude hiding (foldr1, head, tail, filter, (++), take, null, length, map, zipWith, zip, last, reverse)
 import           Data.Vector
+import  qualified Data.List as L
 import  Numeric.LinearAlgebra hiding (Vector, toList, fromList)
+import Data.Ord (comparing)
 
 import           Point
 
 type Normal = Vector Double
 type CovMat = Vector Double
 
+--  ( src/Point.hs, dist/build/Point.o )
+-- | @k@ is the parameter for the k-NN estimator
 normals :: Int -> Vector Point -> Vector Normal
 normals k ps = map (\p -> normalAt p k ps) ps
 
+
 normalAt :: Point -> Int -> Vector Point -> Normal
-normalAt p k ps = firstEigenVector $ covarianceMatrix center ps
+normalAt p k ps = firstEigenVector $ covarianceMatrix center kNN
   where 
-    center = centroid $ knearest k p ps
+    kNN = knearest k p ps
+    center = centroid $ kNN
 
 knearest :: Int -> Point -> Vector Point -> Vector Point
-knearest k p  = take k . qsort
-  where
-    qsort ps
-      | (null ps) = empty
-      | (head ps == p) = qsort (tail ps)
-      | otherwise = qsort left ++ (singleton pivot) ++ qsort right
-      where 
-        pivot = head ps
-        dp = distance p pivot
-        left = filter (\x -> distance x p < dp) ps
-        right = filter (\x -> dp <= distance x p) ps
+knearest k p ps = fromList $ L.take k $ L.sortBy (comparing (distance p)) (toList ps)
 
 centroid :: Vector Point -> Point
 centroid ps = k .* p
   where 
     p = foldr1 (+) ps
-    k = fromIntegral $ length ps
+    k = 1.0 / (fromIntegral $ length ps)
 
 covarianceMatrix :: Point -> Vector Point -> Vector Double
 covarianceMatrix center ps = mat
@@ -61,9 +57,12 @@ outerProd p = vec
                    , xy, yy, yz
                    , xz, yz, zz]
 
+-- | From larger to smaller
+eigenValsAndEigenVecs m = eigSH' ((3><3) $ toList m)
+
 firstEigenVector :: Vector Double -> Vector Double
 firstEigenVector m =  convert firstvec
   where
-    (evals, evecs) = eigSH' ((3><3) $ toList m)
+    (evals, evecs) = eigenValsAndEigenVecs m
     evecs' = fromList $ toColumns evecs
-    firstvec = snd $ head $ filter (\(s, _) -> s > 0) (zip (convert evals) evecs')
+    firstvec = snd $ last $ filter (\(s, _) -> s >= 0) (zip (convert evals) evecs')

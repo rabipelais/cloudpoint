@@ -8,6 +8,7 @@ import qualified Data.Vector as V
 
 import Point
 import Sampling
+import Normals
 
 main :: IO ()
 main = do 

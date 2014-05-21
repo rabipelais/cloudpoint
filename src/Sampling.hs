@@ -17,12 +17,15 @@ maxPairs = 100000
 maxTrios :: Int
 maxTrios = 100000
 
-histogram :: Int -> Int -> [Double] -> Vector Int
+-- | @bins@ is the number of bins and @width@ the size of each bin.
+-- the maximum value will be @bins@ * @width@, and larger values
+-- are simply clamped.
+histogram :: Int -> Double -> [Double] -> Vector Int
 histogram bins width ps = V.create $ do 
   hist <- M.replicate bins (0 :: Int)
   let 
     addpoint p = do 
-      let bin = min maxVal (floor (p / fromIntegral width))
+      let bin = min maxVal (floor (p /  width))
       val <- M.read hist bin
       M.write hist bin (val + 1)
 
