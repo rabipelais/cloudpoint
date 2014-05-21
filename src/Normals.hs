@@ -1,12 +1,14 @@
--- | 
+-- |
 
 module Normals where
 
-import           Prelude hiding (foldr1, head, tail, filter, (++), take, null, length, map, zipWith, zip, last, reverse)
+import qualified Data.List             as L
+import           Data.Ord              (comparing)
 import           Data.Vector
-import  qualified Data.List as L
-import  Numeric.LinearAlgebra hiding (Vector, toList, fromList)
-import Data.Ord (comparing)
+import           Numeric.LinearAlgebra hiding (Vector, fromList, toList)
+import           Prelude               hiding (filter, foldr1, head, last,
+                                        length, map, null, reverse, tail, take,
+                                        zip, zipWith, (++))
 
 import           Point
 
@@ -18,25 +20,36 @@ type CovMat = Vector Double
 normals :: Int -> Vector Point -> Vector Normal
 normals k ps = map (\p -> normalAt p k ps) ps
 
+orientedNormalsOrigin :: Int -> Vector Point -> Vector Normal
+orientedNormalsOrigin k ps = zipWith go ps ns
+  where
+    ns = normals k ps
+    go = orientNormalToViewpoint zeroP
+
 
 normalAt :: Point -> Int -> Vector Point -> Normal
 normalAt p k ps = firstEigenVector $ covarianceMatrix center kNN
-  where 
+  where
     kNN = knearest k p ps
-    center = centroid $ kNN
+    center = centroid kNN
+
+orientNormalToViewpoint :: Point -> Point -> Normal -> Normal
+orientNormalToViewpoint v p n = if Point.dot n (v - p) > 0
+                                 then n
+                                 else (-1) .* n
 
 knearest :: Int -> Point -> Vector Point -> Vector Point
 knearest k p ps = fromList $ L.take k $ L.sortBy (comparing (distance p)) (toList ps)
 
 centroid :: Vector Point -> Point
 centroid ps = k .* p
-  where 
+  where
     p = foldr1 (+) ps
     k = 1.0 / (fromIntegral $ length ps)
 
 covarianceMatrix :: Point -> Vector Point -> Vector Double
 covarianceMatrix center ps = mat
-  where 
+  where
     ps' = map ((-) center) ps
     n = length ps
     mat = map (/ fromIntegral n) $ foldr1 (zipWith (+)) $ map outerProd ps'
@@ -46,7 +59,7 @@ outerProd p = vec
   where
     x = _x p
     y = _y p
-    z = _z p 
+    z = _z p
     xx = x*x
     xy = x*y
     xz = x*z

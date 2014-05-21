@@ -1,51 +1,60 @@
--- | 
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+-- |
 
 module Point where
 
-data Point = P !Double !Double !Double deriving (Show, Eq)
+import           Data.Vector
+import           Prelude     hiding (foldr1, map, zipWith)
+
+type Point = Vector Double
 
 _x :: Point -> Double
-_x (P x _ _) = x
+_x p = p ! 0
 
 _y :: Point -> Double
-_y (P _ y _) = y
+_y p = p ! 1
 
 _z :: Point -> Double
-_z (P _ _ z) = z
+_z p = p ! 2
+
+zeroP :: Point
+zeroP = point 0 0 0
+
+point :: Double -> Double -> Double -> Point
+point x y z = fromList [x, y, z]
 
 instance Num Point where
-  (P x y z) + (P x' y' z') = P (x + x') (y + y') (z + z')
-  (P x y z) - (P x' y' z') = P (x - x') (y - y') (z - z')
-  (P x y z) * (P x' y' z') = P (x * x') (y * y') (z * z')
-  negate p = (P 0 0 0) - p
-  abs (P x y z) = P (abs x) (abs y) (abs z) 
+  p + p' = zipWith (+) p p'
+  p - p' = zipWith (-) p p'
+  p * p' = zipWith (*) p p'
+  negate p = zeroP - p
+  abs = map abs
   signum = undefined
   fromInteger = undefined
 
 dot :: Point -> Point -> Double
-dot (P a b c) (P a' b' c') =  a*a' + b*b' + c*c'
+dot p p' =  foldr1 (+) $ p * p'
 
 norm :: Point -> Double
-norm (P a b c) = sqrt(a^2 + b^2 + c^2)
+norm p = sqrt(dot p p)
 
 distance :: Point -> Point -> Double
-distance (P x y z) (P x' y' z') = sqrt((x - x')^2 + (y - y')^2 + (z - z')^2)
+distance p p' = norm (p - p')
 
 (.*) :: Double -> Point -> Point
-(.*) k (P x y z) = point (x*k) (y*k) (z*k)
+(.*) k = map (k *)
 
-point :: Double -> Double -> Double -> Point
-point x y z = (P x y z)
 
 angle :: Point -> Point -> Point -> Double
 angle x y z = acos (prod / (d1*d2))
-  where 
+  where
     v1 = x - y
     v2 = z - y
     d1 = norm v1
     d2 = norm v2
     prod = dot v1 v2
-    
+
 makePoint :: [Double] -> Point
-makePoint (x:y:z:[]) = P x y z
+makePoint (x:y:z:[]) = point x y z
 makePoint _ = error "Wrong point number!"
