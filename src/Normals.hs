@@ -12,23 +12,27 @@ import           Prelude               hiding (filter, foldr1, head, last,
 
 import           Point
 
-type Normal = Vector Double
 type CovMat = Vector Double
 
---  ( src/Point.hs, dist/build/Point.o )
--- | @k@ is the parameter for the k-NN estimator
-normals :: Int -> Vector Point -> Vector Normal
-normals k ps = map (\p -> normalAt p k ps) ps
 
-orientedNormalsOrigin :: Int -> Vector Point -> Vector Normal
-orientedNormalsOrigin k ps = zipWith go ps ns
+-- | @k@ is the parameter for the k-NN estimator
+normals' :: Int -> Vector Point -> Vector Normal
+normals' k ps = map (\p -> normalAt p k ps) ps
+
+normals :: Int -> Vector Point -> Vector Normal
+normals k ps = zipWith go ps ns
   where
-    ns = normals k ps
+    ns = normals' k ps
     go = orientNormalToViewpoint zeroP
 
+normalsView :: Int -> Point -> Vector Point -> Vector Normal
+normalsView k v ps = zipWith go ps ns
+  where
+    ns = normals' k ps
+    go = orientNormalToViewpoint v
 
 normalAt :: Point -> Int -> Vector Point -> Normal
-normalAt p k ps = firstEigenVector $ covarianceMatrix center kNN
+normalAt p k ps = packVector $ firstEigenVector $ covarianceMatrix center kNN
   where
     kNN = knearest k p ps
     center = centroid kNN
@@ -45,12 +49,12 @@ centroid :: Vector Point -> Point
 centroid ps = k .* p
   where
     p = foldr1 (+) ps
-    k = 1.0 / (fromIntegral $ length ps)
+    k = 1.0 / fromIntegral (length ps)
 
-covarianceMatrix :: Point -> Vector Point -> Vector Double
+covarianceMatrix :: Point -> Vector Point -> CovMat
 covarianceMatrix center ps = mat
   where
-    ps' = map ((-) center) ps
+    ps' = map (center -) ps
     n = length ps
     mat = map (/ fromIntegral n) $ foldr1 (zipWith (+)) $ map outerProd ps'
 
@@ -70,10 +74,17 @@ outerProd p = vec
                    , xy, yy, yz
                    , xz, yz, zz]
 
--- | From larger to smaller
-eigenValsAndEigenVecs m = eigSH' ((3><3) $ toList m)
+packVector :: Vector Double -> Normal
+packVector v = point (v!0) (v!1) (v!2)
 
-firstEigenVector :: Vector Double -> Vector Double
+-- | From larger to smaller
+eigenValsAndEigenVecs :: CovMat -> (Vector Double, Matrix Double)
+eigenValsAndEigenVecs m = (eval, evecs)
+  where
+    (val, evecs) = eigSH' ((3><3) $ toList m)
+    eval = convert val
+
+firstEigenVector :: CovMat -> Vector Double
 firstEigenVector m =  convert firstvec
   where
     (evals, evecs) = eigenValsAndEigenVecs m
