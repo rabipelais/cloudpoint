@@ -1,12 +1,13 @@
 module Sampling  where
 
-import qualified Data.Vector as V
-import Data.Vector (Vector, (!))
-import qualified Data.Vector.Mutable as M
-import Data.List
-import System.Random
+import           Data.List
+import           Data.Vector          (Vector, (!))
+import qualified Data.Vector          as V
+import qualified Data.Vector.Mutable  as M
+import qualified Data.Vector.Storable as SV
+import           System.Random
 
-import Point
+import           Point
 
 
 maxSamples :: Int
@@ -21,47 +22,47 @@ maxTrios = 100000
 -- the maximum value will be @bins@ * @width@, and larger values
 -- are simply clamped.
 histogram :: Int -> Double -> [Double] -> Vector Int
-histogram bins width ps = V.create $ do 
+histogram bins width ps = V.create $ do
   hist <- M.replicate bins (0 :: Int)
-  let 
-    addpoint p = do 
+  let
+    addpoint p = do
       let bin = min maxVal (floor (p /  width))
       val <- M.read hist bin
       M.write hist bin (val + 1)
 
   mapM_ addpoint ps
   return hist
-  where 
-    maxVal = (bins - 1)
+  where
+    maxVal = bins - 1
 
-calculateA3 :: Vector Point -> StdGen -> [Double]
+calculateA3 :: SV.Vector Point -> StdGen -> [Double]
 calculateA3 ps g = map (\(a,b,c) -> angle a b c) pointTrios
-  where 
+  where
     samples = samplePoints g ps
-    trioSize = min maxTrios (V.length samples)
-    trios = randomTrios trioSize (V.length samples - 1) g
-    pointTrios = [(samples ! i, samples ! j, samples ! k) | (i, j, k) <- trios]
+    trioSize = min maxTrios (SV.length samples)
+    trios = randomTrios trioSize (SV.length samples - 1) g
+    pointTrios = [(samples SV.! i, samples SV.! j, samples SV.! k) | (i, j, k) <- trios]
 
-calculateD2 :: Vector Point -> StdGen -> [Double]
+calculateD2 :: SV.Vector Point -> StdGen -> [Double]
 calculateD2 ps g = map (uncurry distance) pointPairs
-  where 
+  where
     samples = samplePoints g ps
-    pairSize = min maxPairs (V.length samples)
-    pairs = randomPairs pairSize (V.length samples - 1) g
-    pointPairs = [(samples ! i, samples ! j) | (i, j) <- pairs]
+    pairSize = min maxPairs (SV.length samples)
+    pairs = randomPairs pairSize (SV.length samples - 1) g
+    pointPairs = [(samples SV.! i, samples SV.! j) | (i, j) <- pairs]
 
 -- | Sample unique points from the vector. The max of the length or @maxSamples@
-samplePoints :: StdGen -> V.Vector Point -> Vector Point
-samplePoints g ps = if V.length ps <= maxSamples
+samplePoints :: StdGen -> SV.Vector Point -> SV.Vector Point
+samplePoints g ps = if SV.length ps <= maxSamples
                        then ps
-                       else V.fromList samples
-  where samples = [ ps ! i | i <- randomIdx maxSamples (V.length ps - 1) g]
-  
+                       else SV.fromList samples
+  where samples = [ ps SV.! i | i <- randomIdx maxSamples (SV.length ps - 1) g]
+
 -- | Get a list of size @n@ of trios of indices in the range @0 <= i <= 2@,
 -- where for a pair @(x, y)@, @x /= y@
 randomTrios :: Int -> Int -> StdGen -> [(Int, Int, Int)]
 randomTrios n s g = take n $ filter uniques $ zip3 (randomRs (0, s) g)  (randomRs (0, s) g') (randomRs (0, s) g'')
-  where 
+  where
     (g', g'') = split g
     uniques (a, b, c) = a /= b && a /= c && b /= c
 
@@ -69,7 +70,7 @@ randomTrios n s g = take n $ filter uniques $ zip3 (randomRs (0, s) g)  (randomR
 -- where for a pair @(x, y)@, @x /= y@
 randomPairs :: Int -> Int -> StdGen -> [(Int, Int)]
 randomPairs n s g = take n $ filter uniques $ zip (randomRs (0, s) g') (randomRs (0, s) g'')
-  where 
+  where
     (g', g'') = split g
     uniques (a, b) = a /= b
 

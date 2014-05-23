@@ -4,7 +4,8 @@ module Normals where
 
 import qualified Data.List             as L
 import           Data.Ord              (comparing)
-import           Data.Vector
+import qualified Data.Vector           as V
+import           Data.Vector.Storable
 import           Numeric.LinearAlgebra hiding (Vector, fromList, toList)
 import           Prelude               hiding (filter, foldr1, head, last,
                                         length, map, null, reverse, tail, take,
@@ -12,7 +13,7 @@ import           Prelude               hiding (filter, foldr1, head, last,
 
 import           Point
 
-type CovMat = Vector Double
+type CovMat = V.Vector Double
 
 
 -- | @k@ is the parameter for the k-NN estimator
@@ -56,9 +57,9 @@ covarianceMatrix center ps = mat
   where
     ps' = map (center -) ps
     n = length ps
-    mat = map (/ fromIntegral n) $ foldr1 (zipWith (+)) $ map outerProd ps'
+    mat = V.map (/ fromIntegral n) $ V.foldr1 (V.zipWith (+)) $ V.map outerProd $ convert ps'
 
-outerProd :: Point -> Vector Double
+outerProd :: Point -> V.Vector Double
 outerProd p = vec
   where
     x = _x p
@@ -70,9 +71,9 @@ outerProd p = vec
     yz = y*z
     yy = y*y
     zz = z*z
-    vec = fromList [ xx, xy, xz
-                   , xy, yy, yz
-                   , xz, yz, zz]
+    vec = V.fromList [ xx, xy, xz
+                     , xy, yy, yz
+                     , xz, yz, zz]
 
 packVector :: Vector Double -> Normal
 packVector v = point (v!0) (v!1) (v!2)
@@ -81,12 +82,12 @@ packVector v = point (v!0) (v!1) (v!2)
 eigenValsAndEigenVecs :: CovMat -> (Vector Double, Matrix Double)
 eigenValsAndEigenVecs m = (eval, evecs)
   where
-    (val, evecs) = eigSH' ((3><3) $ toList m)
+    (val, evecs) = eigSH' ((3><3) $ V.toList m)
     eval = convert val
 
 firstEigenVector :: CovMat -> Vector Double
 firstEigenVector m =  convert firstvec
   where
     (evals, evecs) = eigenValsAndEigenVecs m
-    evecs' = fromList $ toColumns evecs
-    firstvec = snd $ last $ filter (\(s, _) -> s >= 0) (zip (convert evals) evecs')
+    evecs' = V.fromList $ toColumns evecs
+    firstvec = snd $ V.last $ V.filter (\(s, _) -> s >= 0) (V.zip (convert evals) evecs')
