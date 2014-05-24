@@ -49,12 +49,15 @@ library
                        , Sampling
                        , Point
                        , Convex
+                       , Main
   build-depends:       vector-algorithms >= 0.6.0.1,
                        hmatrix >= 0.15.2.1,
                        vector >= 0.10.9.1,
                        random >= 1.0.1.1,
                        base >=4.6 && <4.7
   hs-source-dirs:      src
+  extra-lib-dirs:      libs
+  extra-libraries:     stdc++ pcl_io boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common pcl_octree boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common qhull pcl_surface OpenNI pcl_io pcl_filters pcl_search pcl_sample_consensus chull
   ghc-options:         -Wall
                        -fno-warn-type-defaults
                        -fllvm
