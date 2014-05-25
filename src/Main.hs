@@ -7,6 +7,8 @@ import           System.Environment
 import           System.Random
 
 import           Convex
+import           Database
+import           Features
 import           Normals
 import           Point
 import           Sampling

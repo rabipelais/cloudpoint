@@ -23,14 +23,15 @@ cabal-version:       >=1.10
 
 executable cloudpoint
   main-is:             Main.hs
-  other-modules:       Point, Sampling, Normals, Convex
+  other-modules:       Point, Sampling, Normals, Convex, Database, Features
   -- other-extensions:
   C-sources:           cbits/convexhull.cpp
   Include-dirs:        include
   CC-Options:          -fpic -DEIGEN_USE_NEW_STDVECTOR -DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET -DFLANN_STATIC -Wno-deprecated -I/usr/include/vtk-5.8 -I/usr/include/pcl-1.7 -I/usr/include/eigen3 -I/usr/include/ni
   --Includes:            convexhull.h
   extra-libraries:     stdc++ pcl_io boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common pcl_octree boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common qhull pcl_surface OpenNI pcl_io pcl_filters pcl_search pcl_sample_consensus
-  build-depends:       vector-algorithms >= 0.6.0.1,
+  build-depends:       hxt >= 9.3.1.4,
+                       vector-algorithms >= 0.6.0.1,
                        hmatrix >= 0.15.2.1,
                        vector >= 0.10.9.1,
                        random >= 1.0.1.1,
@@ -49,8 +50,11 @@ library
                        , Sampling
                        , Point
                        , Convex
+                       , Database
+                       , Features
                        , Main
-  build-depends:       vector-algorithms >= 0.6.0.1,
+  build-depends:       hxt >= 9.3.1.4,
+                       vector-algorithms >= 0.6.0.1,
                        hmatrix >= 0.15.2.1,
                        vector >= 0.10.9.1,
                        random >= 1.0.1.1,

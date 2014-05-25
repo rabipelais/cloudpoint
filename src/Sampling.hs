@@ -35,6 +35,9 @@ histogram bins width ps = V.create $ do
   where
     maxVal = bins - 1
 
+histogram' :: Int -> [Double] -> [Int]
+histogram' bins ps = V.toList $ histogram bins (maximum ps / fromIntegral bins) ps
+
 calculateA3 :: SV.Vector Point -> StdGen -> [Double]
 calculateA3 ps g = map (\(a,b,c) -> angle a b c) pointTrios
   where
@@ -52,7 +55,7 @@ calculateD2 ps g = map (uncurry distance) pointPairs
     pointPairs = [(samples SV.! i, samples SV.! j) | (i, j) <- pairs]
 
 -- | Sample unique points from the vector. The max of the length or @maxSamples@
-samplePoints :: StdGen -> SV.Vector Point -> SV.Vector Point
+samplePoints :: (SV.Storable a) => StdGen -> SV.Vector a -> SV.Vector a
 samplePoints g ps = if SV.length ps <= maxSamples
                        then ps
                        else SV.fromList samples
