@@ -9,9 +9,15 @@ import           Features
 
 data Object = Object String Features
 
+xmlObjects :: ArrowXml a => [Object] -> a n XmlTree
+xmlObjects obs = root [] (map xmlObject obs)
+
 xmlObject :: ArrowXml a => Object -> a n XmlTree
 xmlObject (Object name (Features fs)) =
   mkelem "object" [attr "name" (txt name)] [xmlFeatures fs]
+
+writeToXml :: [Object] -> String -> IOSLA (XIOState s) a Int
+writeToXml objs dst = xmlObjects objs >>> writeDocument [withIndent yes,withOutputEncoding isoLatin1] dst >>> getErrStatus
 
 instance XmlPickler Object where
   xpickle = xpObject

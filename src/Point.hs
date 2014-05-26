@@ -80,7 +80,7 @@ point' :: CDouble -> CDouble -> CDouble -> Point
 point' = P
 
 angle :: Point -> Point -> Point -> Double
-angle x y z = acos (prod / (d1*d2))
+angle x y z = acos(prod / (d1*d2))
   where
     v1 = x - y
     v2 = z - y

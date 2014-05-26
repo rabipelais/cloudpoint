@@ -39,7 +39,7 @@ histogram' :: Int -> [Double] -> [Int]
 histogram' bins ps = V.toList $ histogram bins (maximum ps / fromIntegral bins) ps
 
 calculateA3 :: SV.Vector Point -> StdGen -> [Double]
-calculateA3 ps g = map (\(a,b,c) -> angle a b c) pointTrios
+calculateA3 ps g = filter (not . isNaN) $ map (\(a,b,c) -> angle a b c) pointTrios
   where
     samples = samplePoints g ps
     trioSize = min maxTrios (SV.length samples)
