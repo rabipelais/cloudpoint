@@ -16,6 +16,7 @@ data Feature = D2 !Int [Int]
              | CH !Double !Double -- area, volume
              deriving (Show)
 
+
 d2Feature :: Int -> StdGen -> Vector Point -> Feature
 d2Feature bins g ps = D2 bins $ histogram' bins $ calculateD2 ps g
 

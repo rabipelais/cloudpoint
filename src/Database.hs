@@ -7,6 +7,21 @@ import           Text.XML.HXT.Core
 
 import           Features
 
+data Object = Object String Features
+
+xmlObject :: ArrowXml a => Object -> a n XmlTree
+xmlObject (Object name (Features fs)) =
+  mkelem "object" [attr "name" (txt name)] [xmlFeatures fs]
+
+instance XmlPickler Object where
+  xpickle = xpObject
+
+xpObject :: PU Object
+xpObject =
+  xpElem "object" $
+  xpWrap (uncurry Object, \(Object n f) -> (n, f)) $
+  xpPair (xpAttr "name" xpText) xpFeatures
+
 xmlFeatures :: ArrowXml a => [Feature] -> a n XmlTree
 xmlFeatures fs =
   selem "features" $ map xmlFeature fs
