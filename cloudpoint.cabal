@@ -17,7 +17,7 @@ maintainer:          sebas.chinoir@gmail.com
 
 -- category:            
 
-build-type:          Simple
+build-type: Custom
 -- extra-source-files:  
 cabal-version:       >=1.10
 
@@ -25,17 +25,18 @@ executable cloudpoint
   main-is:             Main.hs
   other-modules:       Point, Sampling, Normals, Convex, Database, Features
   -- other-extensions:
-  C-sources:           cbits/convexhull.cpp
-  Include-dirs:        include
-  CC-Options:          -fpic -DEIGEN_USE_NEW_STDVECTOR -DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET -DFLANN_STATIC -Wno-deprecated -I/usr/include/vtk-5.8 -I/usr/include/pcl-1.7 -I/usr/include/eigen3 -I/usr/include/ni
+  --C-sources:           cbits/convexhull.cpp
+  Include-dirs:        /home/sebas/uni/Tesis/cloudpoint/include  /usr/include/vtk-5.8 /usr/include/pcl-1.7 /usr/include/eigen3 /usr/include/ni
+  CC-Options:          -fpic -DEIGEN_USE_NEW_STDVECTOR -DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET -DFLANN_STATIC -Wno-deprecated
   --Includes:            convexhull.h
-  extra-libraries:     stdc++ pcl_io boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common pcl_octree boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common qhull pcl_surface OpenNI pcl_io pcl_filters pcl_search pcl_sample_consensus
+  extra-libraries:     stdc++ pcl_io chull boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common pcl_octree boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common qhull pcl_surface OpenNI pcl_io pcl_filters pcl_search pcl_sample_consensus chull
   build-depends:       hxt >= 9.3.1.4,
                        vector-algorithms >= 0.6.0.1,
                        hmatrix >= 0.15.2.1,
                        vector >= 0.10.9.1,
                        random >= 1.0.1.1,
-                       base >=4.6 && <4.7
+                       base >=4.6 && <4.7,
+                       Cabal >= 1.20
   hs-source-dirs:      src     
   ghc-options:         -Wall
                        -fno-warn-type-defaults
@@ -58,9 +59,10 @@ library
                        hmatrix >= 0.15.2.1,
                        vector >= 0.10.9.1,
                        random >= 1.0.1.1,
-                       base >=4.6 && <4.7
+                       base >=4.6 && <4.7,
+                       Cabal >= 1.16
   hs-source-dirs:      src
-  extra-lib-dirs:      libs
+  extra-lib-dirs:      /home/sebas/uni/Tesis/cloudpoint/libs
   extra-libraries:     stdc++ pcl_io boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common pcl_octree boost_system boost_filesystem boost_thread boost_date_time boost_iostreams boost_serialization pthread pcl_common qhull pcl_surface OpenNI pcl_io pcl_filters pcl_search pcl_sample_consensus chull
   ghc-options:         -Wall
                        -fno-warn-type-defaults
