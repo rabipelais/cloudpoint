@@ -9,6 +9,8 @@ import           Convex
 import           Point
 import           Sampling
 
+data Object = Object String Features
+
 newtype Features = Features [Feature] deriving (Show)
 
 data Feature = D2 !Int [Int]

@@ -1,16 +1,19 @@
--- |
+{-# LANGUAGE ExtendedDefaultRules #-}
+{-# LANGUAGE OverloadedStrings    #-}
 
 module Main where
 
 import qualified Data.Vector.Storable           as SV
 import           System.Environment
 import           System.Exit
+import           System.FilePath.Posix
 import           System.Random
 import           Text.XML.HXT.Core
 import           Text.XML.HXT.DOM.FormatXmlTree
 
 import           Convex
-import           Database
+import           Database.Mongo
+import           Database.XML
 import           Features
 import           Normals
 import           Point
@@ -22,13 +25,18 @@ main = do
   inputs <- mapM readFile files
   putStrLn "Read files"
   feats <- mapM (calculateFeatures . readPoints . lines) inputs
-  let objects = zipWith Object files feats
+  let objects = zipWith Object (map dropExtensions files) feats
   putStrLn "Calculated features"
+  toMongo objects
+
+
+toMongo objects = (insertObjects objects) `inDatabase` "tesis"
+
+toXML objects = do
   [rc] <- runX $ writeToXml objects "features.xml"
   if rc >= c_err
      then exitWith (ExitFailure (negate 1))
      else exitSuccess
-
 
 readPoints :: [String] -> SV.Vector Point
 readPoints = SV.fromList . map (makePoint . map read . words)

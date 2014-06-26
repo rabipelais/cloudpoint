@@ -1,13 +1,11 @@
 -- |
 
-module Database where
+module Database.XML where
 
 import           Text.XML.HXT.Arrow.Pickle
 import           Text.XML.HXT.Core
 
 import           Features
-
-data Object = Object String Features
 
 xmlObjects :: ArrowXml a => [Object] -> a n XmlTree
 xmlObjects obs = root [] (map xmlObject obs)
