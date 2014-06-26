@@ -9,7 +9,7 @@ import           Convex
 import           Point
 import           Sampling
 
-data Object = Object String Features
+data Object = Object String Features deriving (Show)
 
 newtype Features = Features [Feature] deriving (Show)
 
